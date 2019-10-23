@@ -7,6 +7,7 @@ Dataset loading functions
 
 import numpy as np
 
+
 def load_mnist(flatten=True, validation=False):
     # Dataset, shuffled and split between train and test sets
     from keras.datasets import mnist
@@ -14,15 +15,16 @@ def load_mnist(flatten=True, validation=False):
     # Divide by 255.
     x_train = x_train.astype('float32') / 255.
     x_test = x_test.astype('float32') / 255.
-    if flatten: # flatten to 784-dimensional vector
+    if flatten:  # flatten to 784-dimensional vector
         x_train = x_train.reshape(x_train.shape[0], -1)
         x_test = x_test.reshape(x_test.shape[0], -1)
-    if validation: # Return train and test set
+    if validation:  # Return train and test set
         return (x_train, y_train), (x_test, y_test)
-    else: # Return only train set with all images
+    else:  # Return only train set with all images
         x = np.concatenate((x_train, x_test))
         y = np.concatenate((y_train, y_test))
         return (x, y), (None, None)
+
 
 def load_fashion_mnist(flatten=True, validation=False):
     from keras.datasets import fashion_mnist  # this requires keras>=2.0.9
@@ -30,15 +32,16 @@ def load_fashion_mnist(flatten=True, validation=False):
     # Divide by 255.
     x_train = x_train.astype('float32') / 255.
     x_test = x_test.astype('float32') / 255.
-    if flatten: # flatten to 784-dimensional vector
+    if flatten:  # flatten to 784-dimensional vector
         x_train = x_train.reshape(x_train.shape[0], -1)
         x_test = x_test.reshape(x_test.shape[0], -1)
-    if validation: # Return train and test set
+    if validation:  # Return train and test set
         return (x_train, y_train), (x_test, y_test)
-    else: # Return only train set with all images
+    else:  # Return only train set with all images
         x = np.concatenate((x_train, x_test))
         y = np.concatenate((y_train, y_test))
         return (x, y), (None, None)
+
 
 def load_usps(data_path='./data/usps'):
     import h5py
@@ -54,6 +57,7 @@ def load_usps(data_path='./data/usps'):
     print('USPS samples', x.shape)
     return (x, y), (None, None)
 
+
 def load_reuters(data_path='./data/reuters'):
     import os
     if not os.path.exists(os.path.join(data_path, 'reutersidf10k.npy')):
@@ -68,6 +72,7 @@ def load_reuters(data_path='./data/reuters'):
     y = y.reshape((y.size,))
     print(('REUTERSIDF10K samples', x.shape))
     return (x, y), (None, None)
+
 
 def make_reuters_data(data_dir):
     """
@@ -145,6 +150,7 @@ def make_reuters_data(data_dir):
     assert x.shape[0] == y.shape[0]
     x = x.reshape((x.shape[0], -1))
     np.save(join(data_dir, 'reutersidf10k.npy'), {'data': x, 'label': y})
+
 
 def load_data(dataset_name, validation=False):
     if dataset_name == 'mnist':

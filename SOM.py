@@ -3,12 +3,12 @@ Implementation of the Deep Embedded Self-Organizing Map model
 SOM layer
 
 @author Florent Forest
-@version 1.0
+@version 2.0
 """
 
 import tensorflow as tf
-from tensorflow import keras # using Tensorflow's Keras API
 from keras.engine.topology import Layer, InputSpec
+
 
 class SOMLayer(Layer):
     """
@@ -35,6 +35,8 @@ class SOMLayer(Layer):
         self.n_prototypes = map_size[0]*map_size[1]
         self.initial_prototypes = prototypes
         self.input_spec = InputSpec(ndim=2)
+        self.prototypes = None
+        self.built = False
 
     def build(self, input_shape):
         assert(len(input_shape) == 2)

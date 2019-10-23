@@ -3,12 +3,9 @@ Implementation of the Kerasom model (standard SOM in Keras)
 Main file
 
 @author Florent Forest
-@version 1.0
+@version 2.0
 """
 
-"""
-Imports
-"""
 # Utilities
 import os
 import csv
@@ -29,9 +26,7 @@ from datasets import load_data
 from SOM import SOMLayer
 from metrics import *
 
-"""
-Loss functions
-"""
+
 def som_loss(weights, distances):
     """
     Calculate SOM reconstruction loss
@@ -43,6 +38,7 @@ def som_loss(weights, distances):
         SOM reconstruction loss
     """
     return tf.reduce_mean(tf.reduce_sum(weights*distances, axis=1))
+
 
 def kmeans_loss(y_pred, distances):
     """
@@ -56,9 +52,7 @@ def kmeans_loss(y_pred, distances):
     """
     return np.mean([distances[i, y_pred[i]] for i in range(len(y_pred))])
 
-"""
-Kerasom class
-"""
+
 class Kerasom:
     """
     Kerasom model (standard SOM in Keras)
@@ -77,6 +71,8 @@ class Kerasom:
         self.input_dim = input_dim
         self.map_size = map_size
         self.n_prototypes = map_size[0]*map_size[1]
+        self.input = None
+        self.model = None
     
     def initialize(self):
         """
@@ -141,8 +137,9 @@ class Kerasom:
         d_row = np.abs(tmp-labels)//self.map_size[1]
         d_col = np.abs(tmp%self.map_size[1]-labels%self.map_size[1])
         return d_row + d_col
-    
-    def neighborhood_function(self, d, T, neighborhood='gaussian'):
+
+    @staticmethod
+    def neighborhood_function(d, T, neighborhood='gaussian'):
         """
         SOM neighborhood function (gaussian neighborhood)
 
@@ -241,7 +238,7 @@ class Kerasom:
                 if decay == 'exponential':
                     T = Tmax*(Tmin/Tmax)**(ite/(som_iterations-1))
                 elif decay == 'linear':
-                    T = Tmax - (Tmax-Tmin)*((ite/(som_iterations-1)))
+                    T = Tmax - (Tmax-Tmin)*(ite/(som_iterations-1))
 
             # Compute topographic weights batches
             w_batch = self.neighborhood_function(self.map_dist(y_pred), T, neighborhood='gaussian')
@@ -292,17 +289,15 @@ class Kerasom:
 
             # Save intermediate model
             if ite % save_interval == 0:
-               self.model.save_weights(save_dir + '/kerasom_model_' + str(ite) + '.h5')
-               print('Saved model to:', save_dir + '/kerasom_model_' + str(ite) + '.h5')
+                self.model.save_weights(save_dir + '/kerasom_model_' + str(ite) + '.h5')
+                print('Saved model to:', save_dir + '/kerasom_model_' + str(ite) + '.h5')
 
         # Save the final model
         logfile.close()
         print('saving model to:', save_dir + '/kerasom_model_final.h5')
         self.model.save_weights(save_dir + '/kerasom_model_final.h5')
 
-"""
-Main
-"""
+
 if __name__ == "__main__":
 
     # Parsing arguments and setting hyper-parameters

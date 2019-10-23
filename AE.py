@@ -3,13 +3,12 @@ Implementation of the Deep Embedded Self-Organizing Map model
 Autoencoder helper function
 
 @author Florent Forest
-@version 1.0
+@version 2.0
 """
 
-from tensorflow import keras # using Tensorflow's Keras API
 from keras.models import Model
 from keras.layers import Input, Dense
-import numpy as np
+
 
 def mlp_autoencoder(encoder_dims, act='relu', init='glorot_uniform'):
     """
@@ -55,4 +54,4 @@ def mlp_autoencoder(encoder_dims, act='relu', init='glorot_uniform'):
     # Decoder model
     decoder = Model(inputs=encoded_input, outputs=decoded, name='decoder')
 
-    return (autoencoder, encoder, decoder)
+    return autoencoder, encoder, decoder

@@ -3,12 +3,9 @@ Implementation of the Deep Embedded Self-Organizing Map model
 Main file
 
 @author Florent Forest
-@version 1.0
+@version 2.0
 """
 
-"""
-Imports
-"""
 # Utilities
 import os
 import csv
@@ -29,9 +26,7 @@ from SOM import SOMLayer
 from AE import mlp_autoencoder
 from metrics import *
 
-"""
-Loss functions
-"""
+
 def som_loss(weights, distances):
     """
     SOM loss
@@ -43,6 +38,7 @@ def som_loss(weights, distances):
         SOM reconstruction loss
     """
     return tf.reduce_mean(tf.reduce_sum(weights*distances, axis=1))
+
 
 def kmeans_loss(y_pred, distances):
     """
@@ -56,9 +52,7 @@ def kmeans_loss(y_pred, distances):
     """
     return np.mean([distances[i, y_pred[i]] for i in range(len(y_pred))])
 
-"""
-DESOM class
-"""
+
 class DESOM:
     """
     Deep Embedded Self-Organizing Map (DESOM) model
@@ -79,6 +73,10 @@ class DESOM:
         self.map_size = map_size
         self.n_prototypes = map_size[0]*map_size[1]
         self.pretrained = False
+        self.autoencoder = None
+        self.encoder = None
+        self.decoder = None
+        self.model = None
     
     def initialize(self, ae_act='relu', ae_init='glorot_uniform'):
         """
@@ -110,7 +108,6 @@ class DESOM:
             gamma: coefficient of SOM loss
             optimizer: optimization algorithm
         """
-        # Compile DESOM model
         self.model.compile(loss={'decoder_0': 'mse', 'SOM': som_loss},
                            loss_weights=[1, gamma],
                            optimizer=optimizer)
@@ -191,11 +188,12 @@ class DESOM:
         """
         labels = np.arange(self.n_prototypes)
         tmp = np.expand_dims(y_pred, axis=1)
-        d_row = np.abs(tmp-labels)//self.map_size[1]
-        d_col = np.abs(tmp%self.map_size[1]-labels%self.map_size[1])
+        d_row = np.abs(tmp-labels) // self.map_size[1]
+        d_col = np.abs(tmp % self.map_size[1] - labels % self.map_size[1])
         return d_row + d_col
-    
-    def neighborhood_function(self, x, T):
+
+    @staticmethod
+    def neighborhood_function(d, T, neighborhood='gaussian'):
         """
         SOM neighborhood function (gaussian neighborhood)
 
@@ -205,7 +203,10 @@ class DESOM:
         # Return
             neighborhood weight
         """
-        return np.exp(-(x**2)/(T**2))
+        if neighborhood == 'gaussian':
+            return np.exp(-(d ** 2) / (T ** 2))
+        elif neighborhood == 'window':
+            return (d <= T).astype(np.float32)
     
     def pretrain(self, X,
                  optimizer='adam',
@@ -386,17 +387,15 @@ class DESOM:
 
             # Save intermediate model
             if ite % save_interval == 0:
-               self.model.save_weights(save_dir + '/DESOM_model_' + str(ite) + '.h5')
-               print('Saved model to:', save_dir + '/DESOM_model_' + str(ite) + '.h5')
+                 self.model.save_weights(save_dir + '/DESOM_model_' + str(ite) + '.h5')
+                 print('Saved model to:', save_dir + '/DESOM_model_' + str(ite) + '.h5')
 
         # Save the final model
         logfile.close()
         print('saving model to:', save_dir + '/DESOM_model_final.h5')
         self.model.save_weights(save_dir + '/DESOM_model_final.h5')
 
-"""
-Main
-"""
+
 if __name__ == "__main__":
 
     # Parsing arguments and setting hyper-parameters

@@ -1,6 +1,7 @@
 """
-@author XXX
 DESOM benchmarking script
+
+@author Florent Forest
 """
 
 import time
@@ -17,9 +18,9 @@ from DESOM import DESOM
 
 datasets = ['MNIST (K=64)', 'Fashion-MNIST (K=64)', 'USPS (K=64)', 'REUTERS-10k (K=64)',
             'MNIST (K=10)', 'Fashion-MNIST (K=10)', 'USPS (K=10)', 'REUTERS-10k (K=4)']
-results = pd.DataFrame(columns=['pur', 'pur_std', 'nmi', 'nmi_std', 'ari', 'ari_std', 'acc', 'acc_std','duration',
-                                'pur_clust', 'pur_clust_std', 'nmi_clust', 'nmi_clust_std', 'ari_clust', 'ari_clust_std', 'acc_clust', 'acc_clust_std'],
-                                 index=datasets)
+results = pd.DataFrame(columns=['pur', 'pur_std', 'nmi', 'nmi_std', 'ari', 'ari_std', 'acc', 'acc_std', 'duration',
+                                'pur_clust', 'pur_clust_std', 'nmi_clust', 'nmi_clust_std', 'ari_clust', 'ari_clust_std',
+                                'acc_clust', 'acc_clust_std'], index=datasets)
 
 n_runs = 1
 output_file = 'desom_benchmark.csv'
@@ -46,6 +47,7 @@ iterations = 100
 som_iterations = iterations
 eval_interval = 100
 save_epochs = 1000000
+
 
 def bench_desom(X_train, y_train, dataset, map_size, encoder_dims, ae_weights=None):
     print('*** {} - desom with {} map and {} autoencoder (gamma={})***'.format(dataset, map_size, encoder_dims, gamma))
@@ -112,9 +114,9 @@ def bench_desom(X_train, y_train, dataset, map_size, encoder_dims, ae_weights=No
 # (X_train, y_train), _ = load_data('mnist')
 # print("Loaded MNIST, shape:", X_train.shape)
 # # DESOM with 64 clusters
-# bench_desom(X_train, y_train, 'MNIST', map_size=(8,8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_mnist_epoch200.h5')
+# bench_desom(X_train, y_train, 'MNIST', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_mnist_epoch200.h5')
 # # # DESOM with 10 clusters
-# bench_desom(X_train, y_train, 'MNIST', map_size=(10,1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_mnist_epoch200.h5')
+# bench_desom(X_train, y_train, 'MNIST', map_size=(10, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_mnist_epoch200.h5')
 
 # """
 # Fashion-MNIST
@@ -123,9 +125,9 @@ def bench_desom(X_train, y_train, dataset, map_size, encoder_dims, ae_weights=No
 # (X_train, y_train), _ = load_data('fmnist')
 # print("Loaded Fashion-MNIST, shape:", X_train.shape)
 # # DESOM with 64 clusters
-# bench_desom(X_train, y_train, 'Fashion-MNIST', map_size=(8,8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_fashion-mnist_epoch200.h5')
+# bench_desom(X_train, y_train, 'Fashion-MNIST', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_fashion-mnist_epoch200.h5')
 # # DESOM with 10 clusters
-# bench_desom(X_train, y_train, 'Fashion-MNIST', map_size=(10,1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_fashion-mnist_epoch200.h5')
+# bench_desom(X_train, y_train, 'Fashion-MNIST', map_size=(10, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_fashion-mnist_epoch200.h5')
 
 # """
 # USPS
@@ -134,9 +136,9 @@ def bench_desom(X_train, y_train, dataset, map_size, encoder_dims, ae_weights=No
 # (X_train, y_train), _ = load_data('usps')
 # print("Loaded USPS, shape:", X_train.shape)
 # # DESOM with 64 clusters
-# bench_desom(X_train, y_train, 'USPS', map_size=(8,8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_usps_epoch200.h5')
+# bench_desom(X_train, y_train, 'USPS', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_usps_epoch200.h5')
 # # DESOM with 10 clusters
-# bench_desom(X_train, y_train, 'USPS', map_size=(10,1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_usps_epoch200.h5')
+# bench_desom(X_train, y_train, 'USPS', map_size=(10, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_usps_epoch200.h5')
 
 """
 REUTERS-10k
@@ -145,8 +147,8 @@ REUTERS-10k
 (X_train, y_train), _ = load_data('reuters10k')
 print("Loaded REUTERS-10k, shape:", X_train.shape)
 # DESOM with 64 clusters
-bench_desom(X_train, y_train, 'REUTERS-10k', map_size=(8,8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_reuters10k_epoch200.h5')
+bench_desom(X_train, y_train, 'REUTERS-10k', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_reuters10k_epoch200.h5')
 # DESOM with 4 clusters
-bench_desom(X_train, y_train, 'REUTERS-10k', map_size=(4,1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_reuters10k_epoch200.h5')
+bench_desom(X_train, y_train, 'REUTERS-10k', map_size=(4, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_reuters10k_epoch200.h5')
 
 results.to_csv(output_file, index_label='dataset')
