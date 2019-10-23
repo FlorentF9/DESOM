@@ -61,7 +61,7 @@ def quantization_error(d):
 def topographic_error(d, map_size):
     """
     Calculate SOM topographic error (internal DESOM function)
-    Topographic error is the ratio of data points for which the two best matching units are neighbots on the map.
+    Topographic error is the ratio of data points for which the two best matching units are not neighbors on the map.
     """
     h,w = map_size
     def is_adjacent(k,l):
