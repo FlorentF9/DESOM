@@ -9,7 +9,6 @@ import numpy as np
 
 
 def load_mnist(flatten=True, validation=False):
-    # Dataset, shuffled and split between train and test sets
     from keras.datasets import mnist
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     # Divide by 255.
@@ -18,6 +17,9 @@ def load_mnist(flatten=True, validation=False):
     if flatten:  # flatten to 784-dimensional vector
         x_train = x_train.reshape(x_train.shape[0], -1)
         x_test = x_test.reshape(x_test.shape[0], -1)
+    else:
+        x_train = x_train.reshape(*x_train.shape, 1)
+        x_test = x_test.reshape(*x_test.shape, 1)
     if validation:  # Return train and test set
         return (x_train, y_train), (x_test, y_test)
     else:  # Return only train set with all images
@@ -27,7 +29,7 @@ def load_mnist(flatten=True, validation=False):
 
 
 def load_fashion_mnist(flatten=True, validation=False):
-    from keras.datasets import fashion_mnist  # this requires keras>=2.0.9
+    from keras.datasets import fashion_mnist
     (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
     # Divide by 255.
     x_train = x_train.astype('float32') / 255.
@@ -35,6 +37,9 @@ def load_fashion_mnist(flatten=True, validation=False):
     if flatten:  # flatten to 784-dimensional vector
         x_train = x_train.reshape(x_train.shape[0], -1)
         x_test = x_test.reshape(x_test.shape[0], -1)
+    else:
+        x_train = x_train.reshape(*x_train.shape, 1)
+        x_test = x_test.reshape(*x_test.shape, 1)
     if validation:  # Return train and test set
         return (x_train, y_train), (x_test, y_test)
     else:  # Return only train set with all images
@@ -43,22 +48,24 @@ def load_fashion_mnist(flatten=True, validation=False):
         return (x, y), (None, None)
 
 
-def load_usps(data_path='./data/usps'):
+def load_usps(data_path='./data/usps', validation=False):
     import h5py
     with h5py.File(data_path+'/usps.h5', 'r') as hf:
-            train = hf.get('train')
-            X_tr = train.get('data')[:]
-            y_tr = train.get('target')[:]
-            test = hf.get('test')
-            X_te = test.get('data')[:]
-            y_te = test.get('target')[:]
-    x = np.concatenate((X_tr, X_te))
-    y = np.concatenate((y_tr, y_te))
-    print('USPS samples', x.shape)
-    return (x, y), (None, None)
+        train = hf.get('train')
+        x_train = train.get('data')[:]
+        y_train = train.get('target')[:]
+        test = hf.get('test')
+        x_test = test.get('data')[:]
+        y_test = test.get('target')[:]
+    if validation:  # Return train and test set
+        return (x_train, y_train), (x_test, y_test)
+    else:  # Return only train set with all images
+        x = np.concatenate((x_train, x_test))
+        y = np.concatenate((y_train, y_test))
+        return (x, y), (None, None)
 
 
-def load_reuters(data_path='./data/reuters'):
+def load_reuters(data_path='./data/reuters', validation=False):
     import os
     if not os.path.exists(os.path.join(data_path, 'reutersidf10k.npy')):
         print('making reuters idf features')
@@ -70,8 +77,14 @@ def load_reuters(data_path='./data/reuters'):
     y = data['label']
     x = x.reshape((x.shape[0], -1)).astype('float64')
     y = y.reshape((y.size,))
-    print(('REUTERSIDF10K samples', x.shape))
-    return (x, y), (None, None)
+    if validation:
+        x_train = x[:7769]
+        y_train = y[:7769]
+        x_test = x[7769:]
+        y_test = y[7769:]
+        return (x_train, y_train), (x_test, y_test)
+    else:
+        return (x, y), (None, None)
 
 
 def make_reuters_data(data_dir):
@@ -152,19 +165,15 @@ def make_reuters_data(data_dir):
     np.save(join(data_dir, 'reutersidf10k.npy'), {'data': x, 'label': y})
 
 
-def load_data(dataset_name, validation=False):
+def load_data(dataset_name, flatten=True, validation=False):
     if dataset_name == 'mnist':
-        return load_mnist(flatten=True, validation=validation)
+        return load_mnist(flatten=flatten, validation=validation)
     elif dataset_name == 'fmnist':
-        return load_fashion_mnist(flatten=True, validation=validation)
+        return load_fashion_mnist(flatten=flatten, validation=validation)
     elif dataset_name == 'usps':
-        if validation:
-            print('Train/validation split is not available for this dataset.')
-        return load_usps()
+        return load_usps(validation=validation)
     elif dataset_name == 'reuters10k' or dataset_name == 'reuters':
-        if validation:
-            print('Train/validation split is not available for this dataset.')
-        return load_reuters()
+        return load_reuters(validation=validation)
     else:
         print('Dataset {} not available! Available datasets are mnist, fmnist, usps and reuters10k.'.format(dataset_name))
         exit(0)
