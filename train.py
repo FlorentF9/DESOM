@@ -41,7 +41,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--Tmax', default=10.0, type=float)
     parser.add_argument('--Tmin', default=0.1, type=float)
-    parser.add_argument('--decay', default='exponential', choices=['exponential', 'linear'])
+    parser.add_argument('--decay', default='exponential', choices=['exponential', 'linear', 'constant'])
     parser.add_argument('--neighborhood', default='gaussian', choices=['gaussian', 'window'])
     parser.add_argument('--save_dir', default='results/tmp')
     parser.add_argument('--verbose', default=1, type=int, choices=[0, 1, 2])

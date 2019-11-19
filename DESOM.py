@@ -235,7 +235,7 @@ class DESOM:
         T : float
             temperature parameter (neighborhood radius)
         neighborhood : str
-            type of neighborhood function ('gaussian' or 'window'
+            type of neighborhood function ('gaussian' or 'window')
 
         Returns
         -------
@@ -360,7 +360,7 @@ class DESOM:
         Tmin : float (default=0.1)
             final temperature parameter (neighborhood radius)
         decay : str (default='exponential')
-            type of temperature decay ('exponential' or 'linear')
+            type of temperature decay ('exponential', 'linear' or 'constant')
         neighborhood : str (default='gaussian')
             type of neighborhood function ('gaussian' or 'window')
         save_dir : str (default='results/tmp'
@@ -400,6 +400,8 @@ class DESOM:
                     T = Tmax * (Tmin / Tmax)**(ite / (som_iterations - 1))
                 elif decay == 'linear':
                     T = Tmax - (Tmax - Tmin)*(ite / (som_iterations - 1))
+                elif decay == 'constant':
+                    T = Tmax
                 else:
                     raise ValueError('invalid decay function')
             
