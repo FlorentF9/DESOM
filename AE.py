@@ -110,7 +110,7 @@ def conv2d_autoencoder(input_shape,
     """
     n_stacks = len(encoder_filters)
 
-    # Infer code shape (assuming "same" padding, conv stride equal to 1 and max pooling stride equal to pool_size)
+    # Infer code shape (assuming "same" padding, conv stride equal to 1 and max pooling stride equal to pooling_size)
     code_shape = list(input_shape)
     for _ in range(n_stacks):
         code_shape[0] = int(np.ceil(code_shape[0] / pooling_size))
@@ -127,18 +127,20 @@ def conv2d_autoencoder(input_shape,
     # Flatten
     flattened = Flatten(name='flatten')(encoded)
     # Project using dense layer
-    code = Dense(latent_dim, name='code')(flattened)  # latent representation is extracted from here
+    code = Dense(latent_dim, name='dense1')(flattened)  # latent representation is extracted from here
+    # Project back to last feature map dimension
+    reshaped = Dense(code_shape[0] * code_shape[1] * code_shape[2], name='dense2')(code)
     # Reshape
-    reshaped = Reshape(code_shape, name='reshape')(code)
+    reshaped = Reshape(code_shape, name='reshape')(reshaped)
     # Internal layers in decoder
     decoded = reshaped
     for i in range(n_stacks-1, -1, -1):
-        decoded = Conv2D(encoder_filters[i], filter_size, activation=act, padding='same', name='decoder_conv_%d' % i)(
-            decoded)
-        # if i > 0:
-        #     decoded = Conv2D(encoder_filters[i], filter_size, activation=act, padding='same', name='decoder_conv_%d' % i)(decoded)
-        # else:
-        #     decoded = Conv2D(encoder_filters[i], filter_size, activation=act, name='decoder_conv_%d' % i)(decoded)  # TODO CHECK
+        if i > 0:
+            decoded = Conv2D(encoder_filters[i], filter_size, activation=act, padding='same', name='decoder_conv_%d'
+                                                                                                   % i)(decoded)
+        else:
+            decoded = Conv2D(encoder_filters[i], filter_size, activation=act, padding='valid', name='decoder_conv_%d'
+                                                                                                    % i)(decoded)
         decoded = UpSampling2D(pooling_size, name='decoder_upsample_%d' % i)(decoded)
     # Output
     decoded = Conv2D(1, filter_size, activation=act, padding='same', name='decoder_0')(decoded)
@@ -150,13 +152,14 @@ def conv2d_autoencoder(input_shape,
     encoder = Model(inputs=x, outputs=code, name='encoder')
 
     # Decoder model
-    flattened_encoded_input = Input(shape=(latent_dim,))
-    encoded_input = autoencoder.get_layer('reshape')(flattened_encoded_input)
+    latent_input = Input(shape=(latent_dim,))
+    flat_encoded_input = autoencoder.get_layer('dense2')(latent_input)
+    encoded_input = autoencoder.get_layer('reshape')(flat_encoded_input)
     decoded = encoded_input
     for i in range(n_stacks-1, -1, -1):
         decoded = autoencoder.get_layer('decoder_conv_%d' % i)(decoded)
         decoded = autoencoder.get_layer('decoder_upsample_%d' % i)(decoded)
     decoded = autoencoder.get_layer('decoder_0')(decoded)
-    decoder = Model(inputs=flattened_encoded_input, outputs=decoded, name='decoder')
+    decoder = Model(inputs=latent_input, outputs=decoded, name='decoder')
 
     return autoencoder, encoder, decoder
