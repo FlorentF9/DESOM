@@ -303,7 +303,7 @@ class Kerasom:
             if ite % eval_interval == 0:
 
                 if X_val is not None:
-                    val_loss = self.model.test_on_batch(X_val_batch, [X_val_batch, w_val_batch])
+                    val_loss = self.model.test_on_batch(X_val_batch, w_val_batch)
 
                 batch_summary = {
                     'map_size': self.map_size,
@@ -334,7 +334,7 @@ class Kerasom:
         self.model.save_weights(save_dir + '/kerasom_model_final.h5')
 
         # Evaluate model on entire dataset
-        print('Evaluate model on  training and/or validation datasets')
+        print('Evaluate model on training and/or validation datasets')
 
         d = self.model.predict(X_train)
         y_pred = d.argmin(axis=1)
@@ -357,63 +357,3 @@ class Kerasom:
         }
         perflogger.evaluate(final_summary, verbose=verbose)
         perflogger.close()
-
-
-if __name__ == "__main__":
-
-    # Parsing arguments and setting hyper-parameters
-    parser = argparse.ArgumentParser(description='train', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--dataset', default='mnist', choices=['mnist', 'fmnist', 'usps', 'reuters10k'])
-    parser.add_argument('--validation', default=False, type=bool, help='use train/validation split')
-    parser.add_argument('--ae_weights', default=None, help='pre-trained autoencoder weights')
-    parser.add_argument('--map_size', nargs='+', default=[10,10], type=int)
-    parser.add_argument('--gamma', default=1.0, type=float, help='coefficient of self-organizing map loss')
-    parser.add_argument('--iterations', default=10000, type=int)
-    parser.add_argument('--som_iterations', default=10000, type=int)
-    parser.add_argument('--eval_interval', default=100, type=int)
-    parser.add_argument('--save_epochs', default=5, type=int)
-    parser.add_argument('--batch_size', default=256, type=int)
-    parser.add_argument('--Tmax', default=10.0, type=float)
-    parser.add_argument('--Tmin', default=0.1, type=float)
-    parser.add_argument('--decay', default='exponential', choices=['exponential', 'linear'])
-    parser.add_argument('--neighborhood', default='gaussian', choices=['gaussian', 'window'])
-    parser.add_argument('--save_dir', default='results/tmp')
-    args = parser.parse_args()
-    print(args)
-
-    # Create save directory if not exists
-    if not os.path.exists(args.save_dir):
-        os.makedirs(args.save_dir)
-
-    # Load data
-    (X_train, y_train), (X_val, y_val) = load_data(args.dataset, validation=args.validation)
-
-    # Set default values
-    init = 'glorot_uniform'
-
-    # Instantiate model
-    kerasom = Kerasom(input_dim=X_train.shape[-1], map_size=args.map_size)
-    
-    # Initialize model
-    optimizer = 'adam'
-    kerasom.initialize()
-    plot_model(kerasom.model, to_file=os.path.join(args.save_dir, 'kerasom_model.png'), show_shapes=True)
-    kerasom.model.summary()
-    kerasom.compile(optimizer=optimizer)
-
-    # Fit model
-    t0 = time()
-    kerasom.fit(X_train, y_train, X_val, y_val, args.iterations, args.som_iterations, args.eval_interval,
-                args.save_epochs, args.batch_size, args.Tmax, args.Tmin, args.decay, args.neighborhood, args.save_dir)
-    print('Training time: ', (time() - t0))
-
-    # Generate Kerasom map prototype visualization
-    if args.dataset in ['mnist', 'fmnist', 'usps']:
-        img_size = int(np.sqrt(X_train.shape[1]))
-        fig, ax = plt.subplots(args.map_size[0], args.map_size[1], figsize=(10, 10))
-        for k in range(args.map_size[0] * args.map_size[1]):
-            ax[k // args.map_size[1]][k % args.map_size[1]].imshow(kerasom.prototypes[k].reshape(img_size, img_size),
-                                                                   cmap='gray')
-            ax[k // args.map_size[1]][k % args.map_size[1]].axis('off')
-        plt.subplots_adjust(hspace=0.05, wspace=0.05)
-        plt.savefig(os.path.join(args.save_dir, 'kerasom_map_{}.png'.format(args.dataset)), bbox_inches='tight')
