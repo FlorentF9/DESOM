@@ -8,6 +8,7 @@ import csv
 from somperf.metrics import *
 from somperf.utils.topology import rectangular_topology_dist
 import sklearn.metrics as skmetrics
+from sharpness import prototype_sharpness_ratio
 
 
 class PerfLogger:
@@ -137,7 +138,7 @@ class PerfLogger:
                 print('[Train] - Lr={:f}, Lsom={:f}, L={:f}'.format(results['Lr'], results['Lsom'], results['L']))
                 if self.with_validation:
                     print('[Val] - Lr={:f}, Lsom={:f}, L={:f}'.format(results['Lr_val'], results['Lsom_val'],
-                                                                       results['L_val']))
+                                                                      results['L_val']))
             if verbose >= 2:
                 print(', '.join(['{}={:f}'.format(metric, results[metric]) for metric in self.metrics]))
 
@@ -411,5 +412,16 @@ class PerfLogger:
             if verbose:
                 print('Evaluating entropy_val...')
             results['entropy_val'] = entropy(summary['y_val_true'], summary['y_val_pred'])
-        
+
+        # Prototype sharpness ratio
+        if 'prototype_sharpness_ratio' in metrics:
+            if verbose:
+                print('Evaluating prototype_sharpness_ratio...')
+            results['prototype_sharpness_ratio'] = prototype_sharpness_ratio(summary['X'], summary['prototypes'])
+        if 'prototype_sharpness_ratio_val' in metrics:
+            if verbose:
+                print('Evaluating prototype_sharpness_ratio_val...')
+            results['prototype_sharpness_ratio_val'] = prototype_sharpness_ratio(summary['X_val'],
+                                                                                 summary['prototypes'])
+
         return results
