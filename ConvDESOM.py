@@ -32,6 +32,8 @@ class ConvDESOM(DESOM):
     ----------
     input_shape : tuple
         input shape given as (height, width) tuple
+    latent_dim : int
+        dimension of latent code (units in hidden dense layer)
     encoder_filters : list
         number of filters in each layer of encoder. The autoencoder is symmetric,
         so the total number of layers is 2*len(encoder_filters) - 1
@@ -43,8 +45,9 @@ class ConvDESOM(DESOM):
         size of the rectangular map. Number of prototypes is map_size[0] * map_size[1]
     """
 
-    def __init__(self, input_shape, encoder_filters, filter_size, pooling_size, map_size):
+    def __init__(self, input_shape, latent_dim, encoder_filters, filter_size, pooling_size, map_size):
         self.input_shape = input_shape
+        self.latent_dim = latent_dim
         self.encoder_filters = encoder_filters
         self.filter_size = filter_size
         self.pooling_size = pooling_size
@@ -68,6 +71,7 @@ class ConvDESOM(DESOM):
         """
         # Create AE models
         self.autoencoder, self.encoder, self.decoder = conv2d_autoencoder(self.input_shape,
+                                                                          self.latent_dim,
                                                                           self.encoder_filters,
                                                                           self.filter_size,
                                                                           self.pooling_size,

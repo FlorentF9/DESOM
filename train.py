@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='train', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--dataset', default='mnist', choices=['mnist', 'fmnist', 'usps', 'reuters10k'])
     parser.add_argument('--architecture', default='dense', choices=['dense', 'convolutional'])
-    parser.add_argument('--validation', default=False, type=bool, help='use train/validation split')
+    parser.add_argument('--validation', default=True, type=bool, help='use train/validation split')
     parser.add_argument('--ae_weights', default=None, help='pre-trained autoencoder weights')
     parser.add_argument('--map_size', nargs='+', default=[8, 8], type=int)
     parser.add_argument('--gamma', default=0.001, type=float, help='coefficient of self-organizing map loss')
@@ -44,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument('--decay', default='exponential', choices=['exponential', 'linear'])
     parser.add_argument('--neighborhood', default='gaussian', choices=['gaussian', 'window'])
     parser.add_argument('--save_dir', default='results/tmp')
+    parser.add_argument('--verbose', default=1, type=int, choices=[0, 1, 2])
     args = parser.parse_args()
     print(args)
 
@@ -94,7 +95,8 @@ if __name__ == "__main__":
     # Fit model
     t0 = time()
     desom.fit(X_train, y_train, X_val, y_val, args.iterations, args.som_iterations, args.eval_interval,
-              args.save_epochs, args.batch_size, args.Tmax, args.Tmin, args.decay, args.neighborhood, args.save_dir)
+              args.save_epochs, args.batch_size, args.Tmax, args.Tmin, args.decay, args.neighborhood,
+              args.save_dir, args.verbose)
     print('Training time: ', (time() - t0))
 
     # Generate DESOM map visualization using reconstructed prototypes
