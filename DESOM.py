@@ -84,7 +84,7 @@ class DESOM:
         self.decoder = None
         self.model = None
     
-    def initialize(self, ae_act='relu', ae_init='glorot_uniform'):
+    def initialize(self, ae_act='relu', ae_init='glorot_uniform', batchnorm=False):
         """Initialize DESOM model
 
         Parameters
@@ -93,9 +93,11 @@ class DESOM:
             activation for AE intermediate layers
         ae_init : str (default='glorot_uniform')
             initialization of AE layers
+        batchnorm : bool (default=False)
+            use batch normalization
         """
         # Create AE models
-        self.autoencoder, self.encoder, self.decoder = mlp_autoencoder(self.encoder_dims, ae_act, ae_init)
+        self.autoencoder, self.encoder, self.decoder = mlp_autoencoder(self.encoder_dims, ae_act, ae_init, batchnorm)
         som_layer = SOMLayer(self.map_size, name='SOM')(self.encoder.output)
         # Create DESOM model
         self.model = Model(inputs=self.autoencoder.input,

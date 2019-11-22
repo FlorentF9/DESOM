@@ -44,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument('--Tmin', default=0.1, type=float)
     parser.add_argument('--decay', default='exponential', choices=['exponential', 'linear', 'constant'])
     parser.add_argument('--neighborhood', default='gaussian', choices=['gaussian', 'window'])
+    parser.add_argument('--batchnorm', default=False, type=bool, help='use batch normalization')
     parser.add_argument('--save_dir', default='results/tmp')
     parser.add_argument('--verbose', default=1, type=int, choices=[0, 1, 2])
     args = parser.parse_args()
@@ -85,7 +86,7 @@ if __name__ == "__main__":
         raise ValueError('Available models are desom, convdesom and som!')
 
     # Initialize model
-    model.initialize() if args.model == 'som' else model.initialize(ae_act='relu', ae_init='glorot_uniform')
+    model.initialize() if args.model == 'som' else model.initialize('relu', 'glorot_uniform', args.batchnorm)
     plot_model(model.model, to_file=os.path.join(args.save_dir, 'model.png'), show_shapes=True)
     model.model.summary()
     model.compile(optimizer=optimizer) if args.model == 'som' else model.compile(gamma=args.gamma, optimizer=optimizer)

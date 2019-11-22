@@ -7,14 +7,13 @@ Autoencoder helper functions
 """
 
 from keras.models import Model
-from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, Flatten, Reshape
+from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D, Flatten, Reshape, BatchNormalization
 import numpy as np
 
 
 def mlp_autoencoder(encoder_dims,
                     act='relu',
                     init='glorot_uniform',
-                    dropout=1.0,
                     batchnorm=False):
     """Fully connected symmetric autoencoder model.
 
@@ -28,8 +27,6 @@ def mlp_autoencoder(encoder_dims,
         activation of AE intermediate layers, not applied to Input, Hidden and Output layers
     init : str (default='glorot_uniform')
         initialization of AE layers
-    dropout : float in [0, 1] (default=1.0)
-        dropout keep probability
     batchnorm : bool (default=False)
         use batch normalization
 
@@ -46,14 +43,19 @@ def mlp_autoencoder(encoder_dims,
     encoded = x
     for i in range(n_stacks-1):
         encoded = Dense(encoder_dims[i + 1], activation=act, kernel_initializer=init, name='encoder_%d' % i)(encoded)
+        if batchnorm:
+            encoded = BatchNormalization()(encoded)
     # Hidden layer (latent space)
-    encoded = Dense(encoder_dims[-1], kernel_initializer=init, name='encoder_%d' % (n_stacks - 1))(encoded)  # latent representation is extracted from here
+    encoded = Dense(encoder_dims[-1], activation='linear', kernel_initializer=init,
+                    name='encoder_%d' % (n_stacks - 1))(encoded)  # latent representation is extracted from here
     # Internal layers in decoder
     decoded = encoded
     for i in range(n_stacks-1, 0, -1):
         decoded = Dense(encoder_dims[i], activation=act, kernel_initializer=init, name='decoder_%d' % i)(decoded)
+        if batchnorm:
+            decoded = BatchNormalization()(decoded)
     # Output
-    decoded = Dense(encoder_dims[0], kernel_initializer=init, name='decoder_0')(decoded)
+    decoded = Dense(encoder_dims[0], activation='linear', kernel_initializer=init, name='decoder_0')(decoded)
 
     # AE model
     autoencoder = Model(inputs=x, outputs=decoded, name='AE')
@@ -79,7 +81,7 @@ def conv2d_autoencoder(input_shape,
                        filter_size,
                        pooling_size,
                        act='relu',
-                       dropout=1.0,
+                       init='glorot_uniform',
                        batchnorm=False):
     """2D convolutional autoencoder model.
 
@@ -98,8 +100,8 @@ def conv2d_autoencoder(input_shape,
         size of maxpool filters
     act : str (default='relu')
         activation of AE intermediate layers, not applied to Input, Hidden and Output layers
-    dropout : float in [0, 1] (default=1.0)
-        dropout keep probability
+    init : str (default='glorot_uniform')
+        initialization of AE layers
     batchnorm : boolean (default=False)
         use batch normalization
 
@@ -122,7 +124,10 @@ def conv2d_autoencoder(input_shape,
     # Internal layers in encoder
     encoded = x
     for i in range(n_stacks):
-        encoded = Conv2D(encoder_filters[i], filter_size, activation=act, padding='same', name='encoder_conv_%d' % i)(encoded)
+        encoded = Conv2D(encoder_filters[i], filter_size, activation=act, padding='same', name='encoder_conv_%d'
+                                                                                               % i)(encoded)
+        if batchnorm:
+            encoded = BatchNormalization()(encoded)
         encoded = MaxPooling2D(pooling_size, padding='same', name='encoder_maxpool_%d' % i)(encoded)
     # Flatten
     flattened = Flatten(name='flatten')(encoded)
@@ -141,9 +146,11 @@ def conv2d_autoencoder(input_shape,
         else:
             decoded = Conv2D(encoder_filters[i], filter_size, activation=act, padding='valid', name='decoder_conv_%d'
                                                                                                     % i)(decoded)
+        if batchnorm:
+            decoded = BatchNormalization()(decoded)
         decoded = UpSampling2D(pooling_size, name='decoder_upsample_%d' % i)(decoded)
     # Output
-    decoded = Conv2D(1, filter_size, activation=act, padding='same', name='decoder_0')(decoded)
+    decoded = Conv2D(1, filter_size, activation='linear', padding='same', name='decoder_0')(decoded)
 
     # AE model
     autoencoder = Model(inputs=x, outputs=decoded, name='AE')

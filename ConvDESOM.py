@@ -59,7 +59,7 @@ class ConvDESOM(DESOM):
         self.decoder = None
         self.model = None
 
-    def initialize(self, ae_act='relu', ae_init='glorot_uniform'):
+    def initialize(self, ae_act='relu', ae_init='glorot_uniform', batchnorm=False):
         """Initialize ConvDESOM model
 
         Parameters
@@ -68,6 +68,8 @@ class ConvDESOM(DESOM):
             activation for AE intermediate layers
         ae_init : str (default='glorot_uniform')
             initialization of AE layers
+        batchnorm : bool (default=False)
+            use batch normalization
         """
         # Create AE models
         self.autoencoder, self.encoder, self.decoder = conv2d_autoencoder(self.input_shape,
@@ -76,7 +78,8 @@ class ConvDESOM(DESOM):
                                                                           self.filter_size,
                                                                           self.pooling_size,
                                                                           ae_act,
-                                                                          ae_init)
+                                                                          ae_init,
+                                                                          batchnorm)
         som_layer = SOMLayer(self.map_size, name='SOM')(self.encoder.output)
         # Create ConvDESOM model
         self.model = Model(inputs=self.autoencoder.input,
