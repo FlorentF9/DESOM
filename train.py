@@ -36,7 +36,7 @@ if __name__ == "__main__":
     parser.add_argument('--gamma', default=0.001, type=float, help='coefficient of self-organizing map loss')
     parser.add_argument('--pretrain_epochs', default=0, type=int)
     parser.add_argument('--iterations', default=10000, type=int)
-    parser.add_argument('--som_iterations', default=10000, type=int)
+    parser.add_argument('--update_interval', default=1, type=int)
     parser.add_argument('--eval_interval', default=100, type=int)
     parser.add_argument('--save_epochs', default=5, type=int)
     parser.add_argument('--batch_size', default=256, type=int)
@@ -44,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument('--Tmin', default=0.1, type=float)
     parser.add_argument('--decay', default='exponential', choices=['exponential', 'linear', 'constant'])
     parser.add_argument('--neighborhood', default='gaussian', choices=['gaussian', 'window'])
+    parser.add_argument('--som_init', default='random', choices=['random', 'som'])
     parser.add_argument('--batchnorm', default=False, type=bool, help='use batch normalization')
     parser.add_argument('--save_dir', default='results/tmp')
     parser.add_argument('--verbose', default=1, type=int, choices=[0, 1, 2])
@@ -98,9 +99,12 @@ if __name__ == "__main__":
     elif args.ae_weights is not None:
         model.load_ae_weights(args.ae_weights)
 
+    # Initialize SOM
+    model.init_som_weights(X_train, init=args.som_init)
+
     # Fit model
     t0 = time()
-    model.fit(X_train, y_train, X_val, y_val, args.iterations, args.som_iterations, args.eval_interval,
+    model.fit(X_train, y_train, X_val, y_val, args.iterations, args.update_interval, args.eval_interval,
               args.save_epochs, args.batch_size, args.Tmax, args.Tmin, args.decay, args.neighborhood,
               args.save_dir, args.verbose)
     print('Training time: ', (time() - t0))

@@ -26,7 +26,7 @@ def som_loss(weights, distances):
     Parameters
     ----------
     weights : Tensor, shape = [n_samples, n_prototypes]
-        weights for the weighted sum,
+        weights for the weighted sum
     distances : Tensor ,shape = [n_samples, n_prototypes]
         pairwise squared euclidean distances between inputs and prototype vectors
 
@@ -144,17 +144,31 @@ class DESOM:
         self.autoencoder.load_weights(ae_weights_path)
         self.pretrained = True
 
-    def init_som_weights(self, X):
-        """Initialize with a sample without remplacement of encoded data points.
+    def init_som_weights(self, X, init='random'):
+        """Initialize SOM prototype vector
 
         Parameters
         ----------
         X : array, shape = [n_samples, input_dim] or [n_samples, height, width, channels]
             training set or batch
+        init : str
+            initialize with a sample without remplacement of encoded data points ('random'), or train a standard SOM
+            for one epoch ('som')
         """
-        sample = X[np.random.choice(X.shape[0], size=self.n_prototypes, replace=False)]
-        encoded_sample = self.encode(sample)
-        self.model.get_layer(name='SOM').set_weights([encoded_sample])
+        if init == 'random':
+            sample = X[np.random.choice(X.shape[0], size=self.n_prototypes, replace=False)]
+            encoded_sample = self.encode(sample)
+            self.model.get_layer(name='SOM').set_weights([encoded_sample])
+        elif init == 'som':
+            from minisom import MiniSom
+            Z = self.encode(X)
+            som = MiniSom(self.map_size[0], self.map_size[1], Z.shape[-1],
+                          sigma=min(self.map_size) - 1, learning_rate=0.5)
+            som.train_batch(Z, Z.shape[0])
+            initial_prototypes = som.get_weights().reshape(-1, Z.shape[1])
+            self.model.get_layer(name='SOM').set_weights([initial_prototypes])
+        else:
+            raise ValueError('invalid SOM init mode')
 
     def encode(self, x):
         """Encoding function. Extracts latent code from hidden layer
@@ -325,7 +339,7 @@ class DESOM:
             X_val=None,
             y_val=None,
             iterations=10000,
-            som_iterations=10000,
+            update_interval=1,
             eval_interval=10,
             save_epochs=5,
             batch_size=256,
@@ -349,8 +363,8 @@ class DESOM:
             (optional) validation labels
         iterations : int (default=10000)
             number of training iterations
-        som_iterations : int (default=10000)
-            number of iterations where SOM neighborhood is decreased
+        eval_interval : int (default=1)
+            train SOM every update_interval iterations
         eval_interval : int (default=10)
             evaluate metrics on training/validation batch every eval_interval iterations
         save_epochs : int (default=5)
@@ -389,31 +403,36 @@ class DESOM:
         for ite in range(iterations):
             (X_batch, y_batch), (X_val_batch, y_val_batch) = next(batch)
 
-            # Compute cluster assignments for batch
-            _, d = self.model.predict(X_batch)
-            y_pred = d.argmin(axis=1)
-            if X_val is not None:
-                _, d_val = self.model.predict(X_val_batch)
-                y_val_pred = d_val.argmin(axis=1)
+            # Train AE and SOM jointly
+            if ite % update_interval == 0:
+                # Compute cluster assignments for batch
+                _, d = self.model.predict(X_batch)
+                y_pred = d.argmin(axis=1)
+                if X_val is not None:
+                    _, d_val = self.model.predict(X_val_batch)
+                    y_val_pred = d_val.argmin(axis=1)
 
-            # Update temperature parameter
-            if ite < som_iterations:
+                # Update temperature parameter
                 if decay == 'exponential':
-                    T = Tmax * (Tmin / Tmax)**(ite / (som_iterations - 1))
+                    T = Tmax * (Tmin / Tmax)**(ite / (iterations - 1))
                 elif decay == 'linear':
-                    T = Tmax - (Tmax - Tmin)*(ite / (som_iterations - 1))
+                    T = Tmax - (Tmax - Tmin)*(ite / (iterations - 1))
                 elif decay == 'constant':
                     T = Tmax
                 else:
                     raise ValueError('invalid decay function')
-            
-            # Compute topographic weights batches
-            w_batch = self.neighborhood_function(self.map_dist(y_pred), T, neighborhood)
-            if X_val is not None:
-                w_val_batch = self.neighborhood_function(self.map_dist(y_val_pred), T, neighborhood)
 
-            # Train on batch
-            loss = self.model.train_on_batch(X_batch, [X_batch, w_batch])
+                # Compute topographic weights batches
+                w_batch = self.neighborhood_function(self.map_dist(y_pred), T, neighborhood)
+                if X_val is not None:
+                    w_val_batch = self.neighborhood_function(self.map_dist(y_val_pred), T, neighborhood)
+
+                # Train on batch
+                loss = self.model.train_on_batch(X_batch, [X_batch, w_batch])
+
+            # Train only AE
+            else:
+                loss = self.model.train_on_batch(X_batch, [X_batch, np.zeros((X_batch.shape[0], self.n_prototypes))])
 
             # Evaluate and log monitored metrics
             if ite % eval_interval == 0:
