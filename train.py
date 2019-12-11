@@ -45,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument('--decay', default='exponential', choices=['exponential', 'linear', 'constant'])
     parser.add_argument('--neighborhood', default='gaussian', choices=['gaussian', 'window'])
     parser.add_argument('--som_init', default='random', choices=['random', 'som'])
-    parser.add_argument('--batchnorm', default=False, type=bool, help='use batch normalization')
+    parser.add_argument('--batchnorm', default=False, action='store_true', help='use batch normalization')
     parser.add_argument('--save_dir', default='results/tmp')
     parser.add_argument('--verbose', default=1, type=int, choices=[0, 1, 2])
     args = parser.parse_args()
