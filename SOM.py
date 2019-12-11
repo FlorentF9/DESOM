@@ -42,7 +42,7 @@ class SOMLayer(Layer):
         assert(len(input_shape) == 2)
         input_dim = input_shape[1]
         self.input_spec = InputSpec(dtype=tf.float32, shape=(None, input_dim))
-        self.prototypes = self.add_weight((self.n_prototypes, input_dim), initializer='glorot_uniform', name='prototypes')
+        self.prototypes = self.add_weight(shape=(self.n_prototypes, input_dim), initializer='glorot_uniform', name='prototypes')
         if self.initial_prototypes is not None:
             self.set_weights(self.initial_prototypes)
             del self.initial_prototypes
