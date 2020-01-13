@@ -7,42 +7,16 @@ Main file
 """
 
 # Utilities
-import os
-import argparse
-from time import time
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Tensorflow/Keras
-import tensorflow as tf
 from keras.models import Model
 from keras.layers import Input
-from keras.utils.vis_utils import plot_model
-
-# Dataset helper function
-from datasets import load_data
 
 # Kerasom components
 from SOM import SOMLayer
 from evaluation import PerfLogger
-
-
-def som_loss(weights, distances):
-    """SOM loss
-
-    Parameters
-    ----------
-    weights : Tensor, shape = [n_samples, n_prototypes]
-        weights for the weighted sum,
-    distances : Tensor ,shape = [n_samples, n_prototypes]
-        pairwise squared euclidean distances between inputs and prototype vectors
-
-    Returns
-    -------
-    som_loss : loss
-        SOM distortion loss
-    """
-    return tf.reduce_mean(tf.reduce_sum(weights * distances, axis=1))
+from DESOM import som_loss
 
 
 class Kerasom:
@@ -80,7 +54,7 @@ class Kerasom:
         """SOM code vectors"""
         return self.model.get_layer(name='SOM').get_weights()[0]
 
-    def compile(self, optimizer):
+    def compile(self, optimizer='adam'):
         """Compile Kerasom model
 
         Parameters
@@ -212,7 +186,7 @@ class Kerasom:
             X_val=None,
             y_val=None,
             iterations=10000,
-            som_iterations=10000,
+            update_interval=1,
             eval_interval=10,
             save_epochs=5,
             batch_size=256,
@@ -236,8 +210,8 @@ class Kerasom:
             (optional) validation labels
         iterations : int (default=10000)
             number of training iterations
-        som_iterations : int (default=10000)
-            number of iterations where SOM neighborhood is decreased
+        update_interval : int (default=1)
+            train SOM every update_interval iterations
         eval_interval : int (default=10)
             evaluate metrics on training/validation batch every eval_interval iterations
         save_epochs : int (default=5)
@@ -281,15 +255,14 @@ class Kerasom:
                 y_val_pred = d_val.argmin(axis=1)
 
             # Update temperature parameter
-            if ite < som_iterations:
-                if decay == 'exponential':
-                    T = Tmax * (Tmin / Tmax) ** (ite / (som_iterations - 1))
-                elif decay == 'linear':
-                    T = Tmax - (Tmax - Tmin) * (ite / (som_iterations - 1))
-                elif decay == 'constant':
-                    T = Tmax
-                else:
-                    raise ValueError('invalid decay function')
+            if decay == 'exponential':
+                T = Tmax * (Tmin / Tmax) ** (ite / (iterations - 1))
+            elif decay == 'linear':
+                T = Tmax - (Tmax - Tmin) * (ite / (iterations - 1))
+            elif decay == 'constant':
+                T = Tmax
+            else:
+                raise ValueError('invalid decay function')
 
             # Compute topographic weights batches
             w_batch = self.neighborhood_function(self.map_dist(y_pred), T, neighborhood)

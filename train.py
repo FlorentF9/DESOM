@@ -30,7 +30,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='train', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--dataset', default='mnist', choices=['mnist', 'fmnist', 'usps', 'reuters10k'])
     parser.add_argument('--model', default='desom', choices=['desom', 'convdesom', 'som'])
-    parser.add_argument('--validation', default=True, type=bool, help='use train/validation split')
+    parser.add_argument('--validation', default=False, type=bool, help='use train/validation split')
     parser.add_argument('--ae_weights', default=None, help='pre-trained autoencoder weights')
     parser.add_argument('--map_size', nargs='+', default=[8, 8], type=int)
     parser.add_argument('--gamma', default=0.001, type=float, help='coefficient of self-organizing map loss')

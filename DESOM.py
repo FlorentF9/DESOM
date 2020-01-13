@@ -363,7 +363,7 @@ class DESOM:
             (optional) validation labels
         iterations : int (default=10000)
             number of training iterations
-        eval_interval : int (default=1)
+        update_interval : int (default=1)
             train SOM every update_interval iterations
         eval_interval : int (default=10)
             evaluate metrics on training/validation batch every eval_interval iterations
