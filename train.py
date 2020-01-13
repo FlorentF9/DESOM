@@ -33,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument('--validation', default=False, type=bool, help='use train/validation split')
     parser.add_argument('--ae_weights', default=None, help='pre-trained autoencoder weights')
     parser.add_argument('--map_size', nargs='+', default=[8, 8], type=int)
+    parser.add_argument('--latent_dim', default=10, type=int, help='latent space dimension')
     parser.add_argument('--gamma', default=0.001, type=float, help='coefficient of self-organizing map loss')
     parser.add_argument('--pretrain_epochs', default=0, type=int)
     parser.add_argument('--iterations', default=10000, type=int)
@@ -73,10 +74,10 @@ if __name__ == "__main__":
 
     # Instantiate model
     if args.model == 'desom':
-        model = DESOM(encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10], map_size=args.map_size)
+        model = DESOM(encoder_dims=[X_train.shape[-1], 500, 500, 2000, args.latent_dim], map_size=args.map_size)
     elif args.model == 'convdesom':
         model = ConvDESOM(input_shape=X_train.shape[1:],
-                          latent_dim=10,
+                          latent_dim=args.latent_dim,
                           encoder_filters=[32, 64, 64],  # [32, 64, 128, 256],
                           filter_size=3,
                           pooling_size=2,
