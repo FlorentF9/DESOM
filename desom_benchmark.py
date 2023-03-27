@@ -110,35 +110,35 @@ def bench_desom(X_train, y_train, dataset, map_size, encoder_dims, ae_weights=No
 # """
 # MNIST
 # """
-# # Load data
-# (X_train, y_train), _ = load_data('mnist')
-# print("Loaded MNIST, shape:", X_train.shape)
-# # DESOM with 64 clusters
-# bench_desom(X_train, y_train, 'MNIST', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_mnist_epoch200.h5')
-# # # DESOM with 10 clusters
-# bench_desom(X_train, y_train, 'MNIST', map_size=(10, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_mnist_epoch200.h5')
+# Load data
+(X_train, y_train), _ = load_data('mnist')
+print("Loaded MNIST, shape:", X_train.shape)
+# DESOM with 64 clusters
+bench_desom(X_train, y_train, 'MNIST', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_mnist_epoch200.h5')
+# # DESOM with 10 clusters
+bench_desom(X_train, y_train, 'MNIST', map_size=(10, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_mnist_epoch200.h5')
 
 # """
 # Fashion-MNIST
 # """
-# # Load data
-# (X_train, y_train), _ = load_data('fmnist')
-# print("Loaded Fashion-MNIST, shape:", X_train.shape)
-# # DESOM with 64 clusters
-# bench_desom(X_train, y_train, 'Fashion-MNIST', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_fashion-mnist_epoch200.h5')
-# # DESOM with 10 clusters
-# bench_desom(X_train, y_train, 'Fashion-MNIST', map_size=(10, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_fashion-mnist_epoch200.h5')
+# Load data
+(X_train, y_train), _ = load_data('fmnist')
+print("Loaded Fashion-MNIST, shape:", X_train.shape)
+# DESOM with 64 clusters
+bench_desom(X_train, y_train, 'Fashion-MNIST', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_fashion-mnist_epoch200.h5')
+# DESOM with 10 clusters
+bench_desom(X_train, y_train, 'Fashion-MNIST', map_size=(10, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_fashion-mnist_epoch200.h5')
 
 # """
 # USPS
 # """
-# # Load data
-# (X_train, y_train), _ = load_data('usps')
-# print("Loaded USPS, shape:", X_train.shape)
-# # DESOM with 64 clusters
-# bench_desom(X_train, y_train, 'USPS', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_usps_epoch200.h5')
-# # DESOM with 10 clusters
-# bench_desom(X_train, y_train, 'USPS', map_size=(10, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_usps_epoch200.h5')
+# Load data
+(X_train, y_train), _ = load_data('usps')
+print("Loaded USPS, shape:", X_train.shape)
+# DESOM with 64 clusters
+bench_desom(X_train, y_train, 'USPS', map_size=(8, 8), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_usps_epoch200.h5')
+# DESOM with 10 clusters
+bench_desom(X_train, y_train, 'USPS', map_size=(10, 1), encoder_dims=[X_train.shape[-1], 500, 500, 2000, 10])#, ae_weights='../results_paper/ae_weights_usps_epoch200.h5')
 
 """
 REUTERS-10k
