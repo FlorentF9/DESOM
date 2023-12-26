@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Tensorflow/Keras
-from keras.utils.vis_utils import plot_model
+from tensorflow.keras.utils import plot_model
 
 # Dataset helper function
 from datasets import load_data
