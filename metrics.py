@@ -7,7 +7,7 @@ Clustering metrics functions
 
 import numpy as np
 from sklearn import metrics
-from sklearn.utils.linear_assignment_ import linear_assignment
+from scipy.optimize import linear_sum_assignment as linear_assignment
 
 
 def cluster_acc(y_true, y_pred):
