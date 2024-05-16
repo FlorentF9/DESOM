@@ -17,7 +17,7 @@ from keras.models import Model
 # DESOM components
 from SOM import SOMLayer
 from AE import mlp_autoencoder
-# from evaluation import PerfLogger
+from evaluation import PerfLogger
 
 
 def som_loss(weights, distances):
@@ -391,10 +391,10 @@ class DESOM:
         print('Save interval:', save_interval)
 
         # Initialize perf logging
-        # perflogger = PerfLogger(with_validation=(X_val is not None),
-        #                         with_labels=(y_train is not None),
-        #                         with_latent_metrics=True,
-        #                         save_dir=save_dir)
+        perflogger = PerfLogger(with_validation=(X_val is not None),
+                                with_labels=(y_train is not None),
+                                with_latent_metrics=True,
+                                save_dir=save_dir)
 
         # Initialize batch generator
         batch = self.batch_generator(X_train, y_train, X_val, y_val, batch_size)
@@ -470,7 +470,7 @@ class DESOM:
                     'y_val_pred': y_val_pred if X_val is not None else None,
                 }
 
-                # perflogger.log(batch_summary, verbose=verbose)
+                perflogger.log(batch_summary, verbose=verbose)
 
             # Save intermediate model
             if ite % save_interval == 0:
@@ -518,5 +518,5 @@ class DESOM:
             'y_val_true': y_val,
             'y_val_pred': y_val_pred if X_val is not None else None,
         }
-        # perflogger.evaluate(final_summary, verbose=verbose)
-        # perflogger.close()
+        perflogger.evaluate(final_summary, verbose=verbose)
+        perflogger.close()
