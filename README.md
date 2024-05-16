@@ -39,8 +39,7 @@ First, clone and install the [**SOMperf** module](https://github.com/FlorentF9/S
 
 ```shell
 git clone https://github.com/FlorentF9/SOMperf
-cd SOMperf
-python3 setup.py install
+python3 install ./SOMperf
 ```
 
 ### Training instructions
